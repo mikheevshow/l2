@@ -2,51 +2,58 @@
 # Only replica1 is running; it cannot reach W=2 or R=2.
 # Expected: errors counter grows, no successful operations.
 #
-# To stop two replicas after startup:
+# Run:
+#   docker compose -f docker-compose.scenario4.yml up --build -d
 #   docker compose -f docker-compose.scenario4.yml stop replica2 replica3
+#   docker compose -f docker-compose.scenario4.yml logs -f client
+
+x-replica-healthcheck: &replica-healthcheck
+  healthcheck:
+    test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/internal/value"]
+    interval: 5s
+    timeout: 3s
+    retries: 10
+    start_period: 30s
+
+x-replica-env: &replica-env
+  SERVER_PORT: "8080"
+  N: "3"
+  W: "2"
+  R: "2"
+  REPLICATION_DELAY_MAX_MS: "1000"
+  REPLICAS: "http://replica1:8080,http://replica2:8080,http://replica3:8080"
 
 services:
   replica1:
     build: ./replica
-    environment:
-      SERVER_PORT: "8080"
-      N: "3"
-      W: "2"
-      R: "2"
-      REPLICATION_DELAY_MAX_MS: "1000"
-      REPLICAS: "http://replica1:8080,http://replica2:8080,http://replica3:8080"
+    environment: *replica-env
     ports:
       - "8081:8080"
+    <<: *replica-healthcheck
 
   replica2:
     build: ./replica
-    environment:
-      SERVER_PORT: "8080"
-      N: "3"
-      W: "2"
-      R: "2"
-      REPLICATION_DELAY_MAX_MS: "1000"
-      REPLICAS: "http://replica1:8080,http://replica2:8080,http://replica3:8080"
+    environment: *replica-env
     ports:
       - "8082:8080"
+    <<: *replica-healthcheck
 
   replica3:
     build: ./replica
-    environment:
-      SERVER_PORT: "8080"
-      N: "3"
-      W: "2"
-      R: "2"
-      REPLICATION_DELAY_MAX_MS: "1000"
-      REPLICAS: "http://replica1:8080,http://replica2:8080,http://replica3:8080"
+    environment: *replica-env
     ports:
       - "8083:8080"
+    <<: *replica-healthcheck
 
   client:
     build: ./client
+    # Client only talks to replica1 — simulates quorum failure after replica2/3 stop
     environment:
       REPLICAS: "http://replica1:8080"
     depends_on:
-      - replica1
-      - replica2
-      - replica3
+      replica1:
+        condition: service_healthy
+      replica2:
+        condition: service_healthy
+      replica3:
+        condition: service_healthy
