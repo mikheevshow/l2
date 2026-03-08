@@ -1,13 +1,13 @@
-# Leaderless Replication — Java
+# Leaderless Replication — Kotlin
 
-Реализация leaderless-репликации на Java (Spring Boot) с Docker-контейнерами.
+Реализация leaderless-репликации на Kotlin (Spring Boot + Coroutines) с Docker-контейнерами.
 
 ## Структура
 
 ```
 .
-├── replica/        # Spring Boot HTTP-сервис — реплика и координатор
-├── client/         # Java-клиент с непрерывным циклом записи/чтения
+├── replica/        # Spring Boot HTTP-сервис — реплика и координатор (Kotlin + Coroutines)
+├── client/         # Kotlin-клиент с непрерывным циклом записи/чтения (OkHttp)
 ├── docker-compose.yml              # Сценарий 1: W+R > N (консистентный)
 ├── docker-compose.scenario2.yml   # Сценарий 2: W+R ≤ N (неконсистентный)
 ├── docker-compose.scenario3.yml   # Сценарий 3: одна реплика упала — кворум есть
