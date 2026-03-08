@@ -1,4 +1,4 @@
-FROM maven:3.9-eclipse-temurin-17 AS build
+FROM amazoncorretto:17-al2023-maven AS build
 WORKDIR /app
 # Cache dependencies separately from source
 COPY pom.xml .
@@ -6,7 +6,7 @@ RUN mvn -q dependency:go-offline
 COPY src ./src
 RUN mvn -q package -DskipTests
 
-FROM eclipse-temurin:17-jdk-alpine
+FROM amazoncorretto:17-al2023
 WORKDIR /app
 COPY --from=build /app/target/*.jar replica.jar
 EXPOSE 8080

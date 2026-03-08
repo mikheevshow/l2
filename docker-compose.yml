@@ -4,7 +4,7 @@
 
 x-replica-healthcheck: &replica-healthcheck
   healthcheck:
-    test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/internal/value"]
+    test: ["CMD", "curl", "-sf", "http://localhost:8080/internal/value"]
     interval: 5s
     timeout: 3s
     retries: 10
