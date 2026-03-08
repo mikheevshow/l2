@@ -1,0 +1,50 @@
+# Scenario 2: Inconsistent configuration — W + R <= N  (N=3, W=1, R=1)
+# All 3 replicas are up, but quorum is minimal.
+# Coordinator confirms write after 1 ack; the other 2 replicas still propagating.
+# Expected: inconsistent counter grows alongside ok.
+
+services:
+  replica1:
+    build: ./replica
+    environment:
+      SERVER_PORT: "8080"
+      N: "3"
+      W: "1"
+      R: "1"
+      REPLICATION_DELAY_MAX_MS: "1000"
+      REPLICAS: "http://replica1:8080,http://replica2:8080,http://replica3:8080"
+    ports:
+      - "8081:8080"
+
+  replica2:
+    build: ./replica
+    environment:
+      SERVER_PORT: "8080"
+      N: "3"
+      W: "1"
+      R: "1"
+      REPLICATION_DELAY_MAX_MS: "1000"
+      REPLICAS: "http://replica1:8080,http://replica2:8080,http://replica3:8080"
+    ports:
+      - "8082:8080"
+
+  replica3:
+    build: ./replica
+    environment:
+      SERVER_PORT: "8080"
+      N: "3"
+      W: "1"
+      R: "1"
+      REPLICATION_DELAY_MAX_MS: "1000"
+      REPLICAS: "http://replica1:8080,http://replica2:8080,http://replica3:8080"
+    ports:
+      - "8083:8080"
+
+  client:
+    build: ./client
+    environment:
+      REPLICAS: "http://replica1:8080,http://replica2:8080,http://replica3:8080"
+    depends_on:
+      - replica1
+      - replica2
+      - replica3
